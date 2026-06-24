@@ -29,18 +29,66 @@ res.json(book);
 });
 
 app.post("/api/books", (req,res)=>{
+  console.log("REQ Boddy>>", req.body)
     const {title, author, genre}=req.body;
-    let nextId;
     const newBook={
         id : nextId,
-        title,
-        author,
-        genre
+        title:title,
+        author: author,
+        genre: genre,
+        available: false
     };
     nextId++;
     books.push(newBook);
-    res.status(201).json(newBook);
+    res.status(201).json({
+      done: "done!",
+      newBook,
+      books
+    });
 })
 
+app.patch("/api/books/:id", (req, res) => {
+  const id = Number(req.params.id);
+  const { title, author, genre, available } = req.body || {};
+
+  let book;
+  for (const item of books) {
+    if (item.id === id) {
+      book = item;
+      break;
+    }
+  }
+
+  if (!book) {
+    return res.status(404).json({ message: "Book not found" });
+  }
+
+  if (!req.body || Object.keys(req.body).length === 0) {
+    return res.status(400).json({ message: "Request body is required" });
+  }
+
+  if (title !== undefined) book.title = title;
+  if (author !== undefined) book.author = author;
+  if (genre !== undefined) book.genre = genre;
+  if (available !== undefined) book.available = available;
+
+  res.json(book);
+});
+
+app.delete("/api/books/:id", (req,res)=>{
+ const id=Number(req.params.id)
+ let book;
+ books= books.filter((item)=>{
+  if (item.id===id){
+    book=item;
+    return false;
+  }
+  return true;
+ })
+ if(!book){
+  return res.status(404).json({message: "Book not found"});
+ }
+ res.sendStatus(204);
+})
   
  app.listen(8080, () => console.log("Server running on port 8080"));
